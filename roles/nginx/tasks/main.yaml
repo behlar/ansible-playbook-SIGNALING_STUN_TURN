@@ -1,0 +1,24 @@
+# roles/nginx/tasks/main.yaml
+---
+- name: updating the system
+  apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+- name: upgrading the system
+  apt: upgrade=dist force_apt_get=yes
+- name: installing nginx using apt
+  apt: name=nginx state=latest update_cache=yes force_apt_get=yes
+- name: installing python3-certbot-nginx using apt
+  apt: name=python3-certbot-nginx state=latest update_cache=yes force_apt_get=yes
+- name: copy config to remote
+  ansible.builtin.copy:
+    src: roles/nginx/files/signaling
+    dest: /etc/nginx/sites-available/signaling
+    backup: yes
+- name: Create a symbolic link to activate vhost
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/signaling
+    dest: /etc/nginx/sites-enabled/signaling
+    state: link
+- name: restart nginx
+  ansible.builtin.shell: systemctl reload nginx
+- name: use certbot to obtain a certificate
+  shell: certbot --authenticator standalone --installer nginx -d google.com --pre-hook "service nginx stop" --post-hook "service nginx start" --register-unsafely-without-email --agree-tos 

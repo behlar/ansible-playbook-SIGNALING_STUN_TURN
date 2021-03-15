@@ -1,0 +1,28 @@
+# roles/coturn/tasks/main.yaml
+---
+- name: updating the system
+  apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+- name: upgrading the system
+  apt: upgrade=dist force_apt_get=yes
+- name: install and config stun/turnserver
+  apt: name=coturn state=latest update_cache=yes force_apt_get=yes
+
+- name: enable daemonizing for your turnserver
+  lineinfile: 
+    path: /etc/default/coturn
+    regexp: "#TURNSERVER_ENABLED=1"
+    line: "TURNSERVER_ENABLED=1"
+    state: present
+    backup: yes
+
+- name: copy turnserver.conf to remote
+  ansible.builtin.copy:
+    src: roles/coturn/files/turnserver.conf
+    dest: /etc/turnserver.conf
+    backup: yes
+
+- name: restart coturn
+  ansible.builtin.shell: systemctl restart coturn
+
+- name: enable coturn
+  ansible.builtin.shell: systemctl enable coturn

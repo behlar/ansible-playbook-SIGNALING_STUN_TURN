@@ -1,0 +1,27 @@
+# roles/nats/tasks/main.yaml
+---
+- name: add signing key
+  apt_key:
+    url: "https://packaging.gitlab.io/nats-server/gpg.key"
+    state: present
+- name: add repository
+  apt_repository:  
+    repo: deb https://packaging.gitlab.io/nats-server nats main
+    state: present
+- name: updating the system
+  apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+- name: upgrading the system
+  apt: upgrade=dist force_apt_get=yes
+- name: installing nats-server using apt
+  apt: name=nats-server state=latest update_cache=yes force_apt_get=yes
+- name: generate config
+  ansible.builtin.shell: 'install -d -o nats -g nats /etc/nats'
+- name: copy nats.conf to remote
+  ansible.builtin.copy:
+    src: roles/nats/files/nats.conf
+    dest: /etc/nats/nats.conf
+    backup: yes
+- name: start NATS-Server
+  ansible.builtin.shell: systemctl start nats-server
+- name: enable NATS-Server
+  ansible.builtin.shell: systemctl enable nats-server  

@@ -1,0 +1,10 @@
+---
+- hosts: default
+  become: yes
+  roles:
+    - ufw
+    - coturn
+    - janus
+    - nats
+    - spreed
+    - nginx

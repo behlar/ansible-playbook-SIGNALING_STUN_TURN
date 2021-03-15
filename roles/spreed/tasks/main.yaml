@@ -1,0 +1,56 @@
+# roles/spreed/tasks/main.yaml
+---
+- name: updating the system
+  apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+- name: upgrading the system
+  apt: upgrade=dist force_apt_get=yes
+- name: installing git using apt
+  apt: name=git state=latest update_cache=yes force_apt_get=yes
+- name: installing automake using apt
+  apt: name=automake state=latest update_cache=yes force_apt_get=yes
+- name: installing golang using apt
+  apt: name=golang state=latest update_cache=yes force_apt_get=yes
+- name: installing build-essential using apt
+  apt: name=build-essential state=latest update_cache=yes force_apt_get=yes
+- name: installing python3 using apt
+  apt: name=python3 state=latest update_cache=yes force_apt_get=yes
+- name: Clone nextcloud-spreed-signaling
+  ansible.builtin.git:
+    repo: https://github.com/strukturag/nextcloud-spreed-signaling.git
+    dest: /opt/nextcloud-spreed-signaling
+- name: make build
+  ansible.builtin.shell: cd /opt/nextcloud-spreed-signaling && make build
+- name: install
+  ansible.builtin.shell: cp /opt/nextcloud-spreed-signaling/bin/signaling /usr/bin
+- name: create a dedicated user
+  ansible.builtin.user:
+    name: signaling
+    comment: "Standalone signaling server for Nextcloud Talk."
+    system: true
+    shell: /usr/sbin/nologin
+- name: create configuration directory
+  ansible.builtin.file:
+    path: /etc/signaling
+    state: directory
+- name: touch server.conf
+  ansible.builtin.file:
+    path: /etc/signaling/server.conf
+    state: touch
+- name: set owner
+  ansible.builtin.file:
+    path: /etc/signaling/server.conf
+    owner: signaling
+    mode: '0600'
+- name: copy the systemd file
+  ansible.builtin.shell: cp /opt/nextcloud-spreed-signaling/dist/init/systemd/signaling.service /etc/systemd/system/signaling.service
+- name: copy server.conf to remote
+  ansible.builtin.copy:
+    src: roles/spreed/files/server.conf
+    dest: /etc/signaling/server.conf
+    backup: yes
+- name: restart signaling
+  ansible.builtin.shell: systemctl daemon-reload
+- name: enable signaling
+  ansible.builtin.shell: systemctl enable signaling
+- name: start signaling
+  ansible.builtin.shell: systemctl start signaling  

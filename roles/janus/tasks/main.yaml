@@ -1,0 +1,61 @@
+# roles/janus/tasks/main.yaml
+---
+- name: updating the system
+  apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+- name: upgrading the system
+  apt: upgrade=dist force_apt_get=yes
+- name: installing janus WebRTC Gateway
+  apt: name=janus state=latest update_cache=yes force_apt_get=yes
+- name: adjust stun_server in janus.jcfg
+  lineinfile:
+    path: /etc/janus/janus.jcfg
+    regexp: '#stun_server = "stun.voip.eutelia.it"'
+    line: 'stun_server = "127.0.0.1"'
+
+- name: adjust stun_port in janus.jcfg
+  lineinfile:
+    path: /etc/janus/janus.jcfg
+    regexp: '#stun_port = 3478'
+    line: 'stun_port = 5349'
+- name: adjust full_trickle in janus.jcfg
+  lineinfile:
+    path: /etc/janus/janus.jcfg
+    regexp: '#full_trickle = true'
+    line: 'full_trickle = true'
+- name: adjust turn_server in janus.jcfg
+  lineinfile:
+    path: /etc/janus/janus.jcfg
+    regexp: '#turn_server = "myturnserver.com"'
+    line: 'turn_server = "127.0.0.1"'
+- name: adjust turn_port in janus.jcfg
+  lineinfile:
+    path: /etc/janus/janus.jcfg
+    regexp: '#turn_port = 3478'
+    line: 'turn_port = 5349'
+- name: adjust turn_type in janus.jcfg
+  lineinfile:
+    path: /etc/janus/janus.jcfg
+    regexp: '#turn_type = "udp"'
+    line: 'turn_type = "udp"'
+- name: adjust turn_rest_api_key in janus.jcfg
+  lineinfile:
+    path: /etc/janus/janus.jcfg
+    regexp: '#turn_rest_api_key = "anyapikeyyoumayhaveset"'
+    line: 'turn_rest_api_key = ciLYmGS6ZYzMiLTdfvSlnQ=='
+- name: adjust cert_pem in janus.jcfg
+  lineinfile:
+    path: /etc/janus/janus.jcfg
+    regexp: 'cert_pem = "/etc/ssl/certs/ssl-cert-snakeoil.pem"'
+    line: '# cert_pem = "/etc/ssl/certs/ssl-cert-snakeoil.pem"'
+- name: adjust cert_key in janus.jcfg
+  lineinfile:
+    path: /etc/janus/janus.jcfg
+    regexp: 'cert_key = "/etc/ssl/private/ssl-cert-snakeoil.key"'
+    line: '# cert_key = "/etc/ssl/private/ssl-cert-snakeoil.key"'
+- name: adjust janus.service, so that it will start after coturn.service
+  lineinfile:
+    path: /lib/systemd/system/janus.service
+    regexp: 'After=network.target'
+    line: 'After=coturn.service'
+- name: systemctl daemon-reload && systemctl restart janus && systemctl enable janus
+  ansible.builtin.shell: systemctl daemon-reload && systemctl restart janus && systemctl enable janus

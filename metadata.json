@@ -1,0 +1,14 @@
+{
+    "name": "focal-server-box",
+    "description": "Ubuntu Server 20.04 Box",
+    "versions": [{
+        "version": "20210304",
+        "status": "active",
+        "providers": [{
+            "name": "virtualbox",
+            "url": "https://cloud-images.ubuntu.com/focal/20210304/focal-server-cloudimg-amd64-vagrant.box",
+            "checksum_type": "sha256",
+            "checksum": "5fd1284f873a146cb49816e9d392c770bf5ba165659d03ca889d0f4b86866931"
+        }]
+    }]
+}

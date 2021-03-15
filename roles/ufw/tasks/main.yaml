@@ -1,0 +1,33 @@
+# roles/ufw/tasks/main.yaml
+---
+- name: updating the system
+  apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+- name: upgrading the system
+  apt: upgrade=dist force_apt_get=yes
+- name: installing firewall using apt
+  apt: name=ufw state=latest update_cache=yes force_apt_get=yes
+- name: firewall is allowing http
+  ufw:
+    rule: allow
+    port: '80'
+- name: firewall is allowing https
+  ufw:
+    rule: allow
+    port: '443'
+- name: firewall is allowing ssh
+  ufw:
+    rule: allow
+    port: '22'
+- name: firewall is allowing STUN/TURN
+  ufw:
+    rule: allow
+    port: '5349'
+    proto: tcp
+- name: firewall is allowing STUN/TURN
+  ufw:
+    rule: allow
+    port: '5349'
+    proto: udp
+- name: firewall is enabling
+  ufw:
+    state: enabled
